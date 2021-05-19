@@ -60,6 +60,18 @@ FString PathToCSV;
 UBYGLocalizationStatics::SetActiveLocalization( 
 
 
+### Customizing Settings
+
+All of the project settings can be modified through `Project Settings > Plugins
+> BYG Localization` in the editor, or through
+`Config/DefaultBYGLocalization.ini`
+
+Settings include:
+* Localization file directories (default `/Localization/`)
+* Allowed filetypes (default `.csv` and `.txt`)
+* Filename prefix/suffix (default `loc_` prefix, no suffix)
+* Forcing quotation marks around all CSV values.
+
 ## Installation
 
 ### Source
@@ -80,4 +92,19 @@ UBYGLocalizationStatics::SetActiveLocalization(
 
 * Created and maintained by [@_benui](https://twitter.com/_benui) at [Brace Yourself Games](https://braceyourselfgames.com/)
 
+## Future Work
+
+* Detecting runaway misquoted strings.
+* Allowing multiple stringtables, e.g. `loc_en_ui.csv`, `loc_en_dialog.csv`.
+* More tests.
+* Profiling and performance increases.
+* Improve dir picker, see `DirectoryPathStructCustomization`
+
+## FAQ
+
+### Q) I changed Stringtable Namespace and/or Stringtable ID and now my text is gone!
+
+**A)** Changing **Namespace** or **Stringtable ID** will break all of the
+`FText` strings in your Blueprints. You should only set these values once at
+the start of the project, and not change them.
 
