@@ -7,7 +7,7 @@
 #include "BYGLocalizationStatics.generated.h"
 
 UCLASS()
-class BYGLOCALIZATION_API UBYGLocalizationGameplayStatics : public UBlueprintFunctionLibrary
+class BYGLOCALIZATION_API UBYGLocalizationStatics : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
@@ -17,4 +17,7 @@ public:
 
 	UFUNCTION( BlueprintCallable )
 	static bool HasTextInTable( const FString& TableName, const FString& Key );
+
+	UFUNCTION( BlueprintCallable )
+	static bool SetLocalizationFromFile( const FString& Path );
 };

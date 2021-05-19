@@ -5,7 +5,7 @@
 #include "Internationalization/StringTableCore.h"
 #include "Internationalization/StringTableRegistry.h"
 
-bool UBYGLocalizationGameplayStatics::HasTextInTable( const FString& TableName, const FString& Key )
+bool UBYGLocalizationStatics::HasTextInTable( const FString& TableName, const FString& Key )
 {
 	FStringTableConstPtr StringTable = FStringTableRegistry::Get().FindStringTable( *TableName );
 
@@ -52,7 +52,7 @@ FText GetTextFromTable( const FString& TableName, const FString& Key, bool& bIsF
 		*CleanedKey ) );
 }
 
-FText UBYGLocalizationGameplayStatics::GetGameText( const FString& Key )
+FText UBYGLocalizationStatics::GetGameText( const FString& Key )
 {
 	const UBYGLocalizationSettings* Settings = GetDefault<UBYGLocalizationSettings>();
 
@@ -66,4 +66,24 @@ FText UBYGLocalizationGameplayStatics::GetGameText( const FString& Key )
 	return Result;
 }
 
+bool UBYGLocalizationStatics::SetLocalizationFromFile( const FString& Path )
+{
+	const UBYGLocalizationSettings* Settings = GetDefault<UBYGLocalizationSettings>();
 
+	FStringTableRegistry::Get().UnregisterStringTable( FName( Settings->StringtableID ) );
+	FStringTableRegistry::Get().Internal_LocTableFromFile(
+		FName( Settings->StringtableID ),
+		Settings->StringtableNamespace,
+		Path,
+		FPaths::ProjectContentDir()
+	);
+
+#if !WITH_EDITOR
+	// Only use UE4's locale changing system outside of the editor, or stuff gets weird
+	const FBYGLocalizationLocaleBasic Basic = UBYGLocalization::GetCultureFromFilename( Path );
+	FInternationalization::Get().SetCurrentCulture( Basic.LocaleCode );
+	FInternationalization::Get().SetCurrentLanguageAndLocale( Basic.LocaleCode );
+#endif
+
+	return true;
+}
