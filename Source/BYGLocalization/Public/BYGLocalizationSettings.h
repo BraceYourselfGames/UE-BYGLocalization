@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "CoreUObject/Public/UObject/NoExportTypes.h"
 #include "BYGLocalizationSettings.generated.h"
 
 USTRUCT()
@@ -27,6 +28,8 @@ class UBYGLocalizationSettings : public UObject
 	GENERATED_BODY()
 
 public:
+	UBYGLocalizationSettings( const FObjectInitializer& ObjectInitializer );
+
 	// Two-character language code used to identify the primary language
 	// All other translations will be based on this
 	UPROPERTY( config, EditAnywhere, Category = "Language" )

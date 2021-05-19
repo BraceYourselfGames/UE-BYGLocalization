@@ -2,6 +2,11 @@
 
 #include "BYGLocalizationSettings.h"
 
+UBYGLocalizationSettings::UBYGLocalizationSettings( const FObjectInitializer& ObjectInitializer )
+{
+	PrimaryLocalizationDirectory.Path = "/Localization/";
+}
+
 FString UBYGLocalizationSettings::RemovePrefixSuffix( const FString& FileWithExtension ) const
 {
 	FString Filename = FPaths::GetBaseFilename( FileWithExtension );
