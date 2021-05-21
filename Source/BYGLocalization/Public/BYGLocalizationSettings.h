@@ -14,6 +14,7 @@ enum class EBYGQuotingPolicy : uint8
 	OnlyWhenNeeded
 };
 
+
 UENUM()
 enum class EBYGPathRoot
 {
@@ -64,7 +65,7 @@ struct FBYGPath
 
 
 UCLASS( config = BYGLocalization, defaultconfig )
-class UBYGLocalizationSettings : public UObject
+class BYGLOCALIZATION_API UBYGLocalizationSettings : public UObject
 {
 	GENERATED_BODY()
 

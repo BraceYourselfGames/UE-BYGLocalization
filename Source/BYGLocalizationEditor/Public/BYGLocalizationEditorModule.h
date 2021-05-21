@@ -5,12 +5,12 @@
 #include "UnrealEd.h"
 #include "Engine.h"
 
-class FBYGLocalizationEditor : public FDefaultGameModuleImpl
+class FBYGLocalizationEditorModule : public IModuleInterface
 {
 public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
 protected:
-	void OnPostEngineInit();
+	bool HandleSettingsSaved();
 };

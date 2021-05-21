@@ -1,3 +1,5 @@
+// Copyright Brace Yourself Games. All Rights Reserved.
+
 using UnrealBuildTool;
 
 public class BYGLocalizationEditor : ModuleRules
@@ -6,17 +8,11 @@ public class BYGLocalizationEditor : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PrivateIncludePathModuleNames.AddRange(
-			new string[] {
-			}
-		);
-
 		PublicDependencyModuleNames.AddRange(
 			new string[] {
 				"Core",
 				"CoreUObject",
 				"Engine",
-				"Slate",
 				"UnrealEd",
                 "UMG",
 			}
@@ -24,25 +20,13 @@ public class BYGLocalizationEditor : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
-                //"SlateCore",
+				"Slate",
+                "SlateCore",
 				"BYGLocalization",
-                //"EditorStyle",
-				//"SlateCore",
-                //"Projects",
-				//"PropertyEditor",
-				//"EditorSubsystem",
-				//"EditorWidgets",
-				//"DeveloperSettings",
-				//"RenderCore",
+				"InputCore",
+                "EditorStyle",
 				"FunctionalTesting",
-				//"DataValidation",
-				//"KismetCompiler"
             }
         );
-
-		DynamicallyLoadedModuleNames.AddRange(
-			new string[] {
-			}
-		);
 	}
 }

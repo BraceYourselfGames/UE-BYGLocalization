@@ -18,8 +18,6 @@ public:
 	void ReloadLocalizations();
 
 protected:
-	bool HandleSettingsSaved();
-
 	void UnloadLocalizations();
 
 	TArray<FName> StringTableIDs;

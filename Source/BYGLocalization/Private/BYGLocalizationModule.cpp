@@ -2,32 +2,13 @@
 
 #include "BYGLocalizationModule.h"
 #include "BYGLocalizationSettings.h"
-#include "Developer/Settings/Public/ISettingsModule.h"
-#include "Developer/Settings/Public/ISettingsSection.h"
-#include "Developer/Settings/Public/ISettingsContainer.h"
 #include "Core/Public/Internationalization/StringTableRegistry.h"
 #include "BYGLocalization.h"
 
-#define LOCTEXT_NAMESPACE "FBYGLocalizationModule"
+#define LOCTEXT_NAMESPACE "BYGLocalizationModule"
 
 void FBYGLocalizationModule::StartupModule()
 {
-	if ( ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>( "Settings" ) )
-	{
-		ISettingsContainerPtr SettingsContainer = SettingsModule->GetContainer( "Project" );
-		ISettingsSectionPtr SettingsSection = SettingsModule->RegisterSettings( "Project", "Plugins", "BYG Localization",
-			LOCTEXT( "RuntimeGeneralSettingsName", "BYG Localization" ),
-			LOCTEXT( "RuntimeGeneralSettingsDescription", "Simple loc system with support for fan translations." ),
-			GetMutableDefault<UBYGLocalizationSettings>()
-		);
-
-		if ( SettingsSection.IsValid() )
-		{
-			SettingsSection->OnModified().BindRaw( this, &FBYGLocalizationModule::HandleSettingsSaved );
-		}
-	}
-
-
 	const UBYGLocalizationSettings* Settings = GetDefault<UBYGLocalizationSettings>();
 
 	bool bDoUpdate = false;
@@ -53,11 +34,6 @@ void FBYGLocalizationModule::StartupModule()
 
 void FBYGLocalizationModule::ShutdownModule()
 {
-	if ( ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>( "Settings" ) )
-	{
-		SettingsModule->UnregisterSettings( "Project", "CustomSettings", "General" );
-	}
-
 	// Using this because GetDefault<UBYGLocalizationSettings>() is not valid inside ShutdownModule
 	UnloadLocalizations();
 }
@@ -92,19 +68,6 @@ void FBYGLocalizationModule::UnloadLocalizations()
 		FStringTableRegistry::Get().UnregisterStringTable( ID );
 	}
 	StringTableIDs.Empty();
-}
-
-bool FBYGLocalizationModule::HandleSettingsSaved()
-{
-	UBYGLocalizationSettings* Settings = GetMutableDefault<UBYGLocalizationSettings>();
-	const bool ResaveSettings = Settings->Validate();
-
-	if ( ResaveSettings )
-	{
-		Settings->SaveConfig();
-	}
-
-	return true;
 }
 
 #undef LOCTEXT_NAMESPACE

@@ -2,55 +2,90 @@
 
 #include "BYGLocalizationEditorModule.h"
 
-#include "PropertyEditorModule.h"
-#include "ISettingsModule.h"
+#include "Editor/PropertyEditor/Public/PropertyEditorModule.h"
+#include "Developer/Settings/Public/ISettingsModule.h"
+#include "Developer/Settings/Public/ISettingsSection.h"
+#include "Developer/Settings/Public/ISettingsContainer.h"
 
-//#include "Customization/BYGStyleDisplayTypeCustomization.h"
-//#include "Customization/BYGTextJustifyCustomization.h"
+#include "BYGLocalizationEditor/Private/StatsWindow/BYGLocalizationStatsWindow.h"
+#include "Framework/Docking/TabManager.h"
+#include "Editor/WorkspaceMenuStructure/Public/WorkspaceMenuStructureModule.h"
+#include "Editor/WorkspaceMenuStructure/Public/WorkspaceMenuStructure.h"
+#include "Widgets/Docking/SDockTab.h"
+
+#include "BYGLocalization/Public/BYGLocalizationSettings.h"
 
 #define LOCTEXT_NAMESPACE "BYGLocalizationEditorModule"
 
-void FBYGLocalizationEditor::StartupModule()
+// Not sure why this is necessary, saw it in another module
+namespace BYGLocalizationModule
 {
-	FDefaultGameModuleImpl::StartupModule();
-
-	//FPropertyEditorModule& PropertyModule = FModuleManager::LoadModuleChecked< FPropertyEditorModule >( "PropertyEditor" );
-
-	//PropertyModule.NotifyCustomizationModuleChanged();
-
-	FCoreDelegates::OnPostEngineInit.AddRaw( this, &FBYGLocalizationEditor::OnPostEngineInit );
+	static const FName LocalizationStatsTabName = FName( TEXT( "BYG Localization Stats" ) );
 }
 
-void FBYGLocalizationEditor::OnPostEngineInit()
+
+TSharedRef<SDockTab> SpawnStatsTab( const FSpawnTabArgs& Args )
 {
-#if 0
+	return SNew( SDockTab )
+		//.Icon( FBYGRichTextUIStyle::GetBrush( "BYGRichText.TabIcon" ) )
+		.TabRole( ETabRole::NomadTab )
+		.Label( NSLOCTEXT( "BYGLocalization", "StatsTabTitle", "BYG Localization Stats" ) )
+		[
+			SNew( SBYGLocalizationStatsWindow )
+		];
+}
+
+void FBYGLocalizationEditorModule::StartupModule()
+{
 	if ( ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>( "Settings" ) )
 	{
-		SettingsModule->RegisterSettings( "Project", "Plugins", "BYGLocalization",
-			LOCTEXT( "RuntimeSettingsName", "BYG Rich Text" ),
-			LOCTEXT( "RuntimeSettingsDescription", "Configure the BYG Rich Text plugin" ),
-			GetMutableDefault<UBYGLocalizationRuntimeSettings>() );
-	}
-	#endif
-}
+		ISettingsContainerPtr SettingsContainer = SettingsModule->GetContainer( "Project" );
+		ISettingsSectionPtr SettingsSection = SettingsModule->RegisterSettings( "Project", "Plugins", "BYG Localization",
+			LOCTEXT( "RuntimeGeneralSettingsName", "BYG Localization" ),
+			LOCTEXT( "RuntimeGeneralSettingsDescription", "Simple loc system with support for fan translations." ),
+			GetMutableDefault<UBYGLocalizationSettings>()
+		);
 
-void FBYGLocalizationEditor::ShutdownModule()
-{
-	FDefaultGameModuleImpl::ShutdownModule();
-
-	//auto& PropertyModule = FModuleManager::LoadModuleChecked< FPropertyEditorModule >( "PropertyEditor" );
-
-	if ( UObjectInitialized() )
-	{
-		if ( ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>( "Settings" ) )
+		if ( SettingsSection.IsValid() )
 		{
-			SettingsModule->UnregisterSettings( "Project", "Plugins", "BYGLocalization" );
+			SettingsSection->OnModified().BindRaw( this, &FBYGLocalizationEditorModule::HandleSettingsSaved );
 		}
 	}
+
+
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner( BYGLocalizationModule::LocalizationStatsTabName, FOnSpawnTab::CreateStatic( &SpawnStatsTab ) )
+		.SetDisplayName( NSLOCTEXT( "BYGLocalization", "TestTab", "BYG Localization Stats" ) )
+		.SetTooltipText( NSLOCTEXT( "BYGLocalization", "TestTooltipText", "Open a window with info on localizations." ) )
+		.SetGroup( WorkspaceMenu::GetMenuStructure().GetDeveloperToolsMiscCategory() );
+		//.SetIcon( FSlateIcon( FBYGRichTextUIStyle::GetStyleSetName(), "BYGRichText.TabIcon" ) );
 }
+
+void FBYGLocalizationEditorModule::ShutdownModule()
+{
+	ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>( "Settings" );
+
+	if ( SettingsModule != nullptr )
+	{
+		SettingsModule->UnregisterSettings( "Project", "Plugins", "BYG Localizations" );
+	}
+}
+
+bool FBYGLocalizationEditorModule::HandleSettingsSaved()
+{
+	UBYGLocalizationSettings* Settings = GetMutableDefault<UBYGLocalizationSettings>();
+	const bool ResaveSettings = Settings->Validate();
+
+	if ( ResaveSettings )
+	{
+		Settings->SaveConfig();
+	}
+
+	return true;
+}
+
 
 #undef LOCTEXT_NAMESPACE
 
-IMPLEMENT_GAME_MODULE( FBYGLocalizationEditor, BYGLocalizationEditor );
+IMPLEMENT_GAME_MODULE( FBYGLocalizationEditorModule, BYGLocalizationEditor );
 
 
