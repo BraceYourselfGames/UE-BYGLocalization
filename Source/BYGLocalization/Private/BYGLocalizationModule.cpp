@@ -48,10 +48,29 @@ void FBYGLocalizationModule::StartupModule()
 		UBYGLocalization::UpdateTranslations();
 	}
 
+	ReloadLocalizations();
+}
+
+void FBYGLocalizationModule::ShutdownModule()
+{
+	if ( ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>( "Settings" ) )
+	{
+		SettingsModule->UnregisterSettings( "Project", "CustomSettings", "General" );
+	}
+
+	// Using this because GetDefault<UBYGLocalizationSettings>() is not valid inside ShutdownModule
+	UnloadLocalizations();
+}
+
+void FBYGLocalizationModule::ReloadLocalizations()
+{
+	UnloadLocalizations();
+
+	const UBYGLocalizationSettings* Settings = GetDefault<UBYGLocalizationSettings>();
+
 	// GameStrings is the ID we use for our currently-used string table
 	// For example it could be French if the player has chosen to use French
 	const FString Filename = UBYGLocalization::GetFileWithPathFromLanguageCode( Settings->PrimaryLanguageCode );
-	StringTableIDs.Empty();
 	StringTableIDs.Add( FName( Settings->StringtableID ) );
 	FStringTableRegistry::Get().Internal_LocTableFromFile( StringTableIDs[ 0 ], Settings->StringtableNamespace, Filename, FPaths::ProjectContentDir() );
 
@@ -65,13 +84,8 @@ void FBYGLocalizationModule::StartupModule()
 #endif
 }
 
-void FBYGLocalizationModule::ShutdownModule()
+void FBYGLocalizationModule::UnloadLocalizations()
 {
-	if ( ISettingsModule* SettingsModule = FModuleManager::GetModulePtr<ISettingsModule>( "Settings" ) )
-	{
-		SettingsModule->UnregisterSettings( "Project", "CustomSettings", "General" );
-	}
-
 	// Using this because GetDefault<UBYGLocalizationSettings>() is not valid inside ShutdownModule
 	for ( const FName& ID : StringTableIDs )
 	{

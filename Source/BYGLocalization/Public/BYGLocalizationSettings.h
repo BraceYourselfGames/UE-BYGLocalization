@@ -14,7 +14,6 @@ enum class EBYGQuotingPolicy : uint8
 	OnlyWhenNeeded
 };
 
-
 UENUM()
 enum class EBYGPathRoot
 {
@@ -176,4 +175,8 @@ public:
 	FString DeprecatedStatus = "Deprecated Entry";
 
 	bool Validate();
+
+#if WITH_EDITOR
+	virtual void PostEditChangeProperty( struct FPropertyChangedEvent& PropertyChangedEvent ) override;
+#endif
 };

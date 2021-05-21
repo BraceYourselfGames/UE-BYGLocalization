@@ -70,15 +70,15 @@ bool UBYGLocalizationStatics::SetLocalizationFromFile( const FString& Path )
 {
 	const UBYGLocalizationSettings* Settings = GetDefault<UBYGLocalizationSettings>();
 
-	const FString Filename = FPaths::GetCleanFilename( Path );
-	const FString Dirname = FPaths::GetPath( Path );
+	//const FString Filename = FPaths::GetCleanFilename( Path );
+	//const FString Dirname = FPaths::GetPath( Path );
 
 	FStringTableRegistry::Get().UnregisterStringTable( FName( Settings->StringtableID ) );
 	FStringTableRegistry::Get().Internal_LocTableFromFile(
 		FName( Settings->StringtableID ),
 		Settings->StringtableNamespace,
-		Filename,
-		Dirname
+		Path,
+		FPaths::ProjectContentDir() 
 	);
 
 #if !WITH_EDITOR
@@ -90,3 +90,4 @@ bool UBYGLocalizationStatics::SetLocalizationFromFile( const FString& Path )
 
 	return true;
 }
+
