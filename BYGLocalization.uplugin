@@ -4,7 +4,7 @@
 	"VersionName": "1.0",
 	"FriendlyName": "BYG Localization",
 	"Description": "Simple CSV loc system supporting fan translations",
-	"Category": "Other",
+	"Category": "Localization",
 	"CreatedBy": "benui @ Brace Yourself Games",
 	"CreatedByURL": "https://benui.ca/",
 	"DocsURL": "",
@@ -20,6 +20,11 @@
 			"Type": "ClientOnlyNoCommandlet",
 			"LoadingPhase": "Default",
 			"WhitelistPlatforms": [ "Win64", "Mac", "Linux" ]
+		},
+		{
+			"Name": "BYGLocalizationEditor",
+			"Type": "EditorNoCommandlet",
+			"LoadingPhase": "Default"
 		}
 	]
 }

@@ -30,6 +30,24 @@ void FBYGLocalizationModule::StartupModule()
 
 	const UBYGLocalizationSettings* Settings = GetDefault<UBYGLocalizationSettings>();
 
+	bool bDoUpdate = false;
+	bool bHasCommandLineFlag = !Settings->bUpdateLocsWithCommandLineFlag || FParse::Param( FCommandLine::Get(), *Settings->CommandLineFlag );
+#if UE_BUILD_SHIPPING
+	if ( Settings->bUpdateLocsInShippingBuilds )
+	{
+		bDoUpdate = true && bHasCommandLineFlag;
+	}
+#else
+	if ( Settings->bUpdateLocsInDebugBuilds )
+	{
+		bDoUpdate = true && bHasCommandLineFlag;
+	}
+#endif
+	if ( bDoUpdate )
+	{
+		UBYGLocalization::UpdateTranslations();
+	}
+
 	// GameStrings is the ID we use for our currently-used string table
 	// For example it could be French if the player has chosen to use French
 	const FString Filename = UBYGLocalization::GetFileWithPathFromLanguageCode( Settings->PrimaryLanguageCode );

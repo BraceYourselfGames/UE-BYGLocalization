@@ -66,7 +66,7 @@ class BYGLOCALIZATION_API UBYGLocalization
 {
 public:
 	// Returns a map from filename to display name
-	static TArray<FBYGLocalizationLocaleBasic> GetAvailableLocalizations();
+	static TArray<FBYGLocalizationLocaleBasic> GetAvailableLocalizations( bool bLoadCSVFileContent );
 
 	static bool GetLocalizationExists( const FString& FilePath );
 	static void UpdateTranslations();

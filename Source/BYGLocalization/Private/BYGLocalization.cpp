@@ -3,22 +3,16 @@
 #include "BYGLocalization.h"
 #include "Serialization/Csv/CsvParser.h"
 #include "Misc/FileHelper.h"
-#include <Internationalization/Regex.h>
+#include "Internationalization/Regex.h"
 #include "BYGLocalizationSettings.h"
 
-//const TArray<FString> UBYGLocalization::LocRootPaths = { "Localization", "TextData/Localization" };
-//const FString UBYGLocalization::NewStatus = "New Entry";
-// This is a janky backwards-compatible way so we can snip out the original Original w/o using expensive regexees
-//const FString UBYGLocalization::ModifiedStatusLeft = "Modified Entry: was '";
-//const FString UBYGLocalization::ModifiedStatusRight = "'";
-//const FString UBYGLocalization::DeprecatedStatus = "Deprecated Entry";
-//const FString UBYGLocalization::DefaultLocalizationPath = "Localization/BraceYourselfGames/loc_en";
-//const FString UBYGLocalization::DefaultLocalizationPathWithExtension = "Localization/BraceYourselfGames/loc_en.csv";
 DECLARE_LOG_CATEGORY_EXTERN( LogBYGLocalization, Log, All );
 DEFINE_LOG_CATEGORY( LogBYGLocalization );
 
 void FBYGLocalizationLocale::SetEntriesInOrder( TArray<FBYGLocalizationEntry>& NewEntries )
 {
+	QUICK_SCOPE_CYCLE_COUNTER( STAT_BYGLocalization_SetEntriesInOrder );
+
 	EntriesInOrder = NewEntries;
 	KeyToIndex.Empty();
 	StatusCounts.Empty();
@@ -56,7 +50,10 @@ TArray<FString> UBYGLocalization::GetAllLocalizationFiles()
 	TArray<FString> Files;
 
 	TArray<FDirectoryPath> Paths = { Settings->PrimaryLocalizationDirectory };
-	Paths.Append( Settings->AdditionalLocalizationDirectories );
+	for ( const FBYGPath& BYGPath : Settings->AdditionalLocalizationDirectories )
+	{
+		Paths.Add( BYGPath.GetDirectoryPath() );
+	}
 	for ( const FDirectoryPath& Path : Paths )
 	{
 		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
@@ -320,7 +317,7 @@ FBYGLocalizationLocale UBYGLocalization::GetLocalizationData( const FString& Fil
 				FRegexMatcher RunawayMatcher( RunawayKeyPattern, Translation );
 				if ( RunawayMatcher.FindNext() )
 				{
-					UE_LOG( LogTemp, Warning, TEXT( "Possible runaway quotation mark '%s'" ), *Key );
+					UE_LOG( LogBYGLocalization, Warning, TEXT( "Possible runaway quotation mark '%s'" ), *Key );
 				}
 
 				FBYGLocalizationEntry Entry( Key, Translation, Comment );
@@ -361,7 +358,7 @@ FBYGLocalizationLocale UBYGLocalization::GetLocalizationData( const FString& Fil
 	}
 	else
 	{
-		UE_LOG( LogTemp, Warning, TEXT( "Failed to load file '%s'" ), *Filename );
+		UE_LOG( LogBYGLocalization, Warning, TEXT( "Failed to load file '%s'" ), *Filename );
 	}
 
 	Locale.SetEntriesInOrder( NewEntries );
@@ -467,7 +464,7 @@ bool UBYGLocalization::WriteCSV( const TArray<FBYGLocalizationEntry>& Entries, c
 
 			if ( ExportedTranslation != Entry.Translation )
 			{
-				UE_LOG( LogTemp, Verbose, TEXT( "Translation wrapped/replaced" ) );
+				UE_LOG( LogBYGLocalization, Verbose, TEXT( "Translation wrapped/replaced" ) );
 			}
 
 			ExportedStrings += ExportedKey;
@@ -496,20 +493,23 @@ bool UBYGLocalization::WriteCSV( const TArray<FBYGLocalizationEntry>& Entries, c
 }
 
 
-TArray<FBYGLocalizationLocaleBasic> UBYGLocalization::GetAvailableLocalizations()
+TArray<FBYGLocalizationLocaleBasic> UBYGLocalization::GetAvailableLocalizations( bool bLoadCsvFileContent )
 {
 	TArray<FBYGLocalizationLocaleBasic> Localizations;
 
 	const TArray<FString> Files = GetAllLocalizationFiles();
 	for ( const FString& FileWithPath : Files )
 	{
-		const FString FullPath = FPaths::Combine( FPaths::ProjectContentDir(), FileWithPath );
-		// Try loading file
-		FString CSVData;
-		if ( !FFileHelper::LoadFileToString( CSVData, *FullPath ) )
+		if ( bLoadCsvFileContent )
 		{
-			UE_LOG( LogTemp, Error, TEXT( "Failed to load localization file '%s'" ), *FullPath );
-			continue;
+			const FString FullPath = FPaths::Combine( FPaths::ProjectContentDir(), FileWithPath );
+			// Try loading file
+			FString CSVData;
+			if ( !FFileHelper::LoadFileToString( CSVData, *FullPath ) )
+			{
+				UE_LOG( LogBYGLocalization, Error, TEXT( "Failed to load localization file '%s'" ), *FullPath );
+				continue;
+			}
 		}
 
 		FBYGLocalizationLocaleBasic Basic = GetCultureFromFilename( FileWithPath );
@@ -523,7 +523,7 @@ TArray<FBYGLocalizationLocaleBasic> UBYGLocalization::GetAvailableLocalizations(
 
 bool UBYGLocalization::GetPreferredAvailableCulture( FBYGLocalizationLocaleBasic& FoundLocale )
 {
-	const TArray<FBYGLocalizationLocaleBasic> AllLocalizations = GetAvailableLocalizations();
+	const TArray<FBYGLocalizationLocaleBasic> AllLocalizations = GetAvailableLocalizations( false );
 
 	// Pretty sure that "language" is what we want, but we will try to fall back to the others..?
 	const TArray<FCultureRef> ToTest = {
@@ -534,14 +534,14 @@ bool UBYGLocalization::GetPreferredAvailableCulture( FBYGLocalizationLocaleBasic
 
 	for ( const FCultureRef Culture : ToTest )
 	{
-		UE_LOG( LogTemp, Warning, TEXT( "%s" ), *Culture.Get().GetName() );
+		UE_LOG( LogBYGLocalization, Warning, TEXT( "%s" ), *Culture.Get().GetName() );
 	}
 
 	for ( const FCultureRef Culture : ToTest )
 	{
 		for ( const FBYGLocalizationLocaleBasic BYGLocal : AllLocalizations )
 		{
-			UE_LOG( LogTemp, Warning, TEXT( "%s" ), *Culture.Get().GetName() );
+			UE_LOG( LogBYGLocalization, Warning, TEXT( "%s" ), *Culture.Get().GetName() );
 			// Special cases for chinese
 			FString LocaleName = Culture.Get().GetTwoLetterISOLanguageName();
 			if ( Culture.Get().GetName() == "zh-CN" )
