@@ -131,7 +131,14 @@ public:
 			}
 		}
 		#endif
-		if ( ColumnName == TEXT( "LocaleCode" ) )
+		if ( ColumnName == TEXT( "PrimaryLanguage" ) )
+		{
+			return SNew( STextBlock )
+			.Font( FEditorStyle::Get().GetFontStyle( "FontAwesome.11" ) )
+			.TextStyle(FEditorStyle::Get(), "ContentBrowser.TopBar.Font")
+			.Text( this, &SBYGEntryTableRow::GetPrimaryLanguage );
+		}
+		else if ( ColumnName == TEXT( "LocaleCode" ) )
 		{
 			return SNew( STextBlock ).Font( ItemEditorFont ).Text( this, &SBYGEntryTableRow::GetLocaleCode );
 		}
@@ -190,6 +197,12 @@ public:
 
 private:
 
+	FText GetPrimaryLanguage() const
+	{
+		if ( ItemToEdit->LocaleCode == "en" )
+			return FText::FromString( FString( TEXT( "\xf005" ) ) ); /*fa-star*/
+		return FText::GetEmpty();
+	}
 	FText GetLocaleCode() const
 	{
 		return FText::FromString( ItemToEdit->LocaleCode );

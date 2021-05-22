@@ -55,15 +55,15 @@ void SBYGLocalizationStatsWindow::Construct( const FArguments& InArgs )
 			.HeaderRow
 			(
 				SNew( SHeaderRow )
-				+ SHeaderRow::Column( "PrimaryLanguage" ).DefaultLabel( LOCTEXT( "PrimaryLanguageColumn", "*" ) ).ToolTipText( LOCTEXT( "PrimaryLanguageColumnTooltip", "Primarty Language" ) )
-				+ SHeaderRow::Column( "LocaleCode" ).DefaultLabel( LOCTEXT( "LocaleColumn", "Locale Code" ) )
+				+ SHeaderRow::Column( "PrimaryLanguage" ).DefaultLabel( LOCTEXT( "PrimaryLanguageColumn", "Primary" ) ).ToolTipText( LOCTEXT( "PrimaryLanguageColumnTooltip", "Primaty Language" ) ).FixedWidth( 80 )
+				+ SHeaderRow::Column( "LocaleCode" ).DefaultLabel( LOCTEXT( "LocaleColumn", "Locale Code" ) ).FixedWidth( 80 )
 				+ SHeaderRow::Column( "Language" ).DefaultLabel( LOCTEXT( "LanguageColumn", "Language" ) )
 				+ SHeaderRow::Column( "Path" ).DefaultLabel( LOCTEXT( "PathColumn", "Path" ) )
-				+ SHeaderRow::Column( "Normal" ).DefaultLabel( LOCTEXT( "NormalColumn", "Normal" ) )
-				+ SHeaderRow::Column( "New" ).DefaultLabel( LOCTEXT( "NewColumn", "New" ) )
-				+ SHeaderRow::Column( "Modified" ).DefaultLabel( LOCTEXT( "ModifiedColumn", "Modified" ) )
-				+ SHeaderRow::Column( "Deprecated" ).DefaultLabel( LOCTEXT( "DeprecatedColumn", "Deprecated" ) )
-				+ SHeaderRow::Column( "Total" ).DefaultLabel( LOCTEXT( "TotalColumn", "Total" ) )
+				+ SHeaderRow::Column( "Normal" ).DefaultLabel( LOCTEXT( "NormalColumn", "Normal" ) ).HAlignCell( HAlign_Right ).HAlignHeader( HAlign_Right ).FixedWidth( 70 )
+				+ SHeaderRow::Column( "New" ).DefaultLabel( LOCTEXT( "NewColumn", "New" ) ).HAlignCell( HAlign_Right ).HAlignHeader( HAlign_Right ).FixedWidth( 70 )
+				+ SHeaderRow::Column( "Modified" ).DefaultLabel( LOCTEXT( "ModifiedColumn", "Modified" ) ).HAlignCell( HAlign_Right ).HAlignHeader( HAlign_Right ).FixedWidth( 70 )
+				+ SHeaderRow::Column( "Deprecated" ).DefaultLabel( LOCTEXT( "DeprecatedColumn", "Deprecated" ) ).HAlignCell( HAlign_Right ).HAlignHeader( HAlign_Right ).FixedWidth( 70 )
+				+ SHeaderRow::Column( "Total" ).DefaultLabel( LOCTEXT( "TotalColumn", "Total" ) ).HAlignCell( HAlign_Right ).HAlignHeader( HAlign_Right ).FixedWidth( 70 )
 			)
 		]
 	];
@@ -90,22 +90,59 @@ TSharedRef<ITableRow> SBYGLocalizationStatsWindow::OnGenerateWidgetForList( TSha
 TSharedPtr<SWidget> SBYGLocalizationStatsWindow::GetListContextMenu()
 {
 	return
-		SNew( SVerticalBox )
-		+ SVerticalBox::Slot()
-		.AutoHeight()
+		SNew(SBorder)
+		.Padding( 3 )
+		.BorderImage( FEditorStyle::GetBrush( "DetailsView.AdvancedDropdownBorder" ) )
 		[
-			SNew( SButton )
-			.Text( LOCTEXT( "OpenFolder", "Open folder" ) )
-			.ButtonStyle( FEditorStyle::Get(), "FlatButton.Default" )
-			.OnClicked( this, &SBYGLocalizationStatsWindow::OpenFolder )
-		]
-		+ SVerticalBox::Slot()
-		.AutoHeight()
-		[
-			SNew( SButton )
-			.Text( LOCTEXT( "OpenFile", "Open file" ) )
-			.ButtonStyle( FEditorStyle::Get(), "FlatButton" )
-			.OnClicked( this, &SBYGLocalizationStatsWindow::OpenFile )
+			SNew( SVerticalBox )
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			[
+				SNew( SButton )
+				.ButtonStyle( FEditorStyle::Get(), "FlatButton" )
+				.OnClicked( this, &SBYGLocalizationStatsWindow::OpenFolder )
+				[
+					SNew( SHorizontalBox)
+					+SHorizontalBox::Slot()
+					.AutoWidth()
+					[
+						SNew( STextBlock )
+						.Font( FEditorStyle::Get().GetFontStyle( "FontAwesome.11" ) )
+						.TextStyle(FEditorStyle::Get(), "ContentBrowser.TopBar.Font")
+						.Text( FText::FromString( FString( TEXT( "\xf07c" ) ) ) /*fa-folder-open*/ )
+					]
+					+ SHorizontalBox::Slot()
+					.AutoWidth()
+					[
+						SNew( STextBlock )
+						.Text( LOCTEXT( "OpenFolder", "Open folder" ) )
+					]
+				]
+			]
+			+ SVerticalBox::Slot()
+			.AutoHeight()
+			[
+				SNew( SButton )
+				.ButtonStyle( FEditorStyle::Get(), "FlatButton" )
+				.OnClicked( this, &SBYGLocalizationStatsWindow::OpenFile )
+				[
+					SNew( SHorizontalBox)
+					+SHorizontalBox::Slot()
+					.AutoWidth()
+					[
+						SNew( STextBlock )
+						.Font( FEditorStyle::Get().GetFontStyle( "FontAwesome.11" ) )
+						.TextStyle(FEditorStyle::Get(), "ContentBrowser.TopBar.Font")
+						.Text( FText::FromString( FString( TEXT( "\xf15b" ) ) ) /*fa-file*/ )
+					]
+					+ SHorizontalBox::Slot()
+					.AutoWidth()
+					[
+						SNew( STextBlock )
+						.Text( LOCTEXT( "OpenFile", "Open file in default editor" ) )
+					]
+				]
+			]
 		];
 
 }
@@ -141,8 +178,11 @@ FReply SBYGLocalizationStatsWindow::OpenFile()
 
 void SBYGLocalizationStatsWindow::OnDoubleClicked( TSharedPtr<FBYGLocalizationStatEntry> Entry )
 {
-	const FString AbsolutePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead( *Entry->Path );
-	FPlatformProcess::LaunchFileInDefaultExternalApplication( *AbsolutePath );
+	if ( Entry.IsValid() )
+	{
+		const FString AbsolutePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead( *Entry->Path );
+		FPlatformProcess::LaunchFileInDefaultExternalApplication( *AbsolutePath );
+	}
 }
 
 #undef LOCTEXT_NAMESPACE
