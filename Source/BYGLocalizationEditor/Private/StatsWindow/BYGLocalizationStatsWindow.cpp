@@ -25,7 +25,7 @@ void SBYGLocalizationStatsWindow::Construct( const FArguments& InArgs )
 		TSharedRef<FBYGLocalizationStatEntry> NewItem = FBYGLocalizationStatEntry::Create();
 		NewItem->LocaleCode = Entry.LocaleCode;
 		NewItem->Language = Entry.Language;
-		NewItem->Path = Entry.FilePath;
+		NewItem->Path = FPaths::Combine( FPaths::ProjectContentDir(), Entry.FilePath );
 
 		// Get stats
 		FBYGLocalizationLocale Data = UBYGLocalization::GetLocalizationData( FPaths::Combine( FPaths::ProjectContentDir(), Entry.FilePath ) );
@@ -49,12 +49,14 @@ void SBYGLocalizationStatsWindow::Construct( const FArguments& InArgs )
 			.ItemHeight( 24 )
 			.ListItemsSource( &Items )
 			.OnGenerateRow( this, &SBYGLocalizationStatsWindow::OnGenerateWidgetForList )
-			//.OnContextMenuOpening( this, &STableViewTesting::GetListContextMenu )
-			.SelectionMode( ESelectionMode::None )
+			.OnContextMenuOpening( this, &SBYGLocalizationStatsWindow::GetListContextMenu )
+			.OnMouseButtonDoubleClick( this, &SBYGLocalizationStatsWindow::OnDoubleClicked )
+			.SelectionMode( ESelectionMode::Single )
 			.HeaderRow
 			(
 				SNew( SHeaderRow )
-				+ SHeaderRow::Column( "LocaleCode" ).DefaultLabel( LOCTEXT( "LocaleColumn", "Locale" ) )
+				+ SHeaderRow::Column( "PrimaryLanguage" ).DefaultLabel( LOCTEXT( "PrimaryLanguageColumn", "*" ) ).ToolTipText( LOCTEXT( "PrimaryLanguageColumnTooltip", "Primarty Language" ) )
+				+ SHeaderRow::Column( "LocaleCode" ).DefaultLabel( LOCTEXT( "LocaleColumn", "Locale Code" ) )
 				+ SHeaderRow::Column( "Language" ).DefaultLabel( LOCTEXT( "LanguageColumn", "Language" ) )
 				+ SHeaderRow::Column( "Path" ).DefaultLabel( LOCTEXT( "PathColumn", "Path" ) )
 				+ SHeaderRow::Column( "Normal" ).DefaultLabel( LOCTEXT( "NormalColumn", "Normal" ) )
@@ -66,6 +68,7 @@ void SBYGLocalizationStatsWindow::Construct( const FArguments& InArgs )
 		]
 	];
 }
+
 
 
 TSharedRef<ITableRow> SBYGLocalizationStatsWindow::OnGenerateWidgetForList( TSharedPtr<FBYGLocalizationStatEntry> InItem, const TSharedRef<STableViewBase>& OwnerTable )
@@ -82,6 +85,64 @@ TSharedRef<ITableRow> SBYGLocalizationStatsWindow::OnGenerateWidgetForList( TSha
 		//.OnAcceptDrop(this, &STableViewTesting::OnAcceptDrop_Handler)
 
 		.ItemToEdit( InItem );
+}
+
+TSharedPtr<SWidget> SBYGLocalizationStatsWindow::GetListContextMenu()
+{
+	return
+		SNew( SVerticalBox )
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		[
+			SNew( SButton )
+			.Text( LOCTEXT( "OpenFolder", "Open folder" ) )
+			.ButtonStyle( FEditorStyle::Get(), "FlatButton.Default" )
+			.OnClicked( this, &SBYGLocalizationStatsWindow::OpenFolder )
+		]
+		+ SVerticalBox::Slot()
+		.AutoHeight()
+		[
+			SNew( SButton )
+			.Text( LOCTEXT( "OpenFile", "Open file" ) )
+			.ButtonStyle( FEditorStyle::Get(), "FlatButton" )
+			.OnClicked( this, &SBYGLocalizationStatsWindow::OpenFile )
+		];
+
+}
+
+FReply SBYGLocalizationStatsWindow::OpenFolder()
+{
+	TArray<TSharedPtr<FBYGLocalizationStatEntry>> SelectedItems;
+	StatsList->GetSelectedItems( SelectedItems );
+
+	for ( int32 i = 0; i < SelectedItems.Num(); ++i )
+	{
+
+		const FString AbsolutePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead( *FPaths::GetPath( SelectedItems[ i ]->Path ) );
+		FPlatformProcess::ExploreFolder( *AbsolutePath );
+	}
+
+	return FReply::Unhandled();
+}
+
+FReply SBYGLocalizationStatsWindow::OpenFile()
+{
+	TArray<TSharedPtr<FBYGLocalizationStatEntry>> SelectedItems;
+	StatsList->GetSelectedItems( SelectedItems );
+
+	for ( int32 i = 0; i < SelectedItems.Num(); ++i )
+	{
+		const FString AbsolutePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead( *SelectedItems[ i ]->Path );
+		FPlatformProcess::LaunchFileInDefaultExternalApplication( *AbsolutePath );
+	}
+
+	return FReply::Unhandled();
+}
+
+void SBYGLocalizationStatsWindow::OnDoubleClicked( TSharedPtr<FBYGLocalizationStatEntry> Entry )
+{
+	const FString AbsolutePath = IFileManager::Get().ConvertToAbsolutePathForExternalAppForRead( *Entry->Path );
+	FPlatformProcess::LaunchFileInDefaultExternalApplication( *AbsolutePath );
 }
 
 #undef LOCTEXT_NAMESPACE

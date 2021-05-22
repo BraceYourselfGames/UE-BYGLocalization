@@ -62,6 +62,12 @@ public:
 
 protected:
 	TSharedRef<ITableRow> OnGenerateWidgetForList( TSharedPtr<FBYGLocalizationStatEntry> InItem, const TSharedRef<STableViewBase>& OwnerTable );
+	TSharedPtr<SWidget> GetListContextMenu();
+
+	FReply OpenFolder();
+	FReply OpenFile();
+
+	void OnDoubleClicked( TSharedPtr<FBYGLocalizationStatEntry> );
 
 	TSharedPtr< SListView< TSharedPtr<FBYGLocalizationStatEntry> > > StatsList;
 
