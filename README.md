@@ -14,6 +14,7 @@ It differs from Unreal's localization system in a few ways:
 * Support multiple localizations for the same language.
 
 
+
 ## Feature Comparison
 
 | Feature | Unreal Localization | BYG Localization |
@@ -26,6 +27,7 @@ It differs from Unreal's localization system in a few ways:
 | Show fallback language text when keys are missing | :x:					| :heavy_check_mark:	|
 | Blueprint code support							| :heavy_check_mark:	| :heavy_check_mark:	|
 | Multiple localizations for same language			| :question:			| :heavy_check_mark:	|
+
 
 
 ## Usage
@@ -83,8 +85,7 @@ Access it through `Window > Developer Tools > BYG Localization Stats`.
 
 ### Customizing Settings
 
-All of the project settings can be modified through `Project Settings > Plugins
-> BYG Localization` in the editor, or through
+All of the project settings can be modified through `Project Settings > Plugins > BYG Localization` in the editor, or through
 `Config/DefaultBYGLocalization.ini`
 
 Settings include:
@@ -93,6 +94,50 @@ Settings include:
 * Filename prefix/suffix (default `loc_` prefix, no suffix)
 * Forcing quotation marks around all CSV values.
 
+
+
+## User Experience for Fan Localizers
+
+### Creating a new localization
+
+1. Create a file with the two-character [ISO 639-1 language
+   code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) and optional
+   region suffix. e.g. if the primary file is `loc_en.csv` and you want to
+   translate the game into French, create a file called `loc_fr.csv`
+2. Launch the game with the `-UpdateLoc` flag (create a desktop shortcut).
+3. Your `loc_fr.csv` file is now populated with all of the primary language
+   strings.
+4. 
+
+After creating `loc_fr.csv` and running the game, your CSV file will look like
+this:
+
+| Key | SourceString | Comment | Primary | Status |
+| --- | --- | --- | --- | --- |
+| `NewGameButtonLabel` | New Game | Shown on the main menu. | New Game | New Entry |
+| `ExitGameButtonLabel` | Quit | Shown on the main menu. | Quit | New Entry |
+
+After translation, your CSV file should look like this. You can remove the "New Entry" text from the Status column:
+
+| Key | SourceString | Comment | Primary | Status |
+| --- | --- | --- | --- | --- |
+| `NewGameButtonLabel` | Nouvelle partie | Shown on the main menu. | New Game | |
+| `ExitGameButtonLabel` | Quitter | Shown on the main menu. | Quit | |
+
+### Maintaining a localization
+
+As the game is updated, strings will be added, removed or modified.
+* New strings will be shown with the status "New Entry", and will show up in the Primary Language until they are translated.
+* Modified will be shown with the status "Modified" and what the primary language text was before.
+* Removed strings will be shown with the status "Deprecated", or automatically removed (depending on the project settings).
+
+| Key | SourceString | Comment | Primary | Status |
+| --- | --- | --- | --- | --- |
+| `ExitGameButtonLabel` | Quitter | Shown on the main menu. | Quit game | Modified: Was 'Quit' |
+| `LoadGameButtonLabel` | Load Game | Shown on the main menu. | Load Game | New Entry |
+
+
+
 ## Installation
 
 ### Source
@@ -100,19 +145,27 @@ Settings include:
 1. Download the zip or clone the repository to `ProjectName/Plugins/BYGLocalization`.
 2. Add `BYGLocalization` to `PrivateDependencyModuleNames` inside `ProjectName.Build.cs`.
 
+
+
 ## Unreal Version Support
 
-* Compiles under Unreal Engine 4.22~5.0EA
+* Compiles under Unreal Engine 4.22 up to 5.0EA
 * Tested mostly with 4.25 and 4.26
+
+
 
 ## License
 
 * [3-clause BSD license](LICENSE)
 
+
+
 ## Contact
 
 * Created and maintained by [@_benui](https://twitter.com/_benui) at [Brace Yourself Games](https://braceyourselfgames.com/)
 * Please report bugs through [GitHub](https://github.com/BraceYourselfGames/UE4-BYGLocalization/issues)
+
+
 
 ## Future Work
 
@@ -121,6 +174,8 @@ Settings include:
 * More tests!
 * Profiling and performance improvements.
 * Improve dir picker, see `DirectoryPathStructCustomization`
+
+
 
 ## FAQ
 
