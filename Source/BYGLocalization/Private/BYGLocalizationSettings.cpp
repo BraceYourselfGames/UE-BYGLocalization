@@ -2,7 +2,6 @@
 
 #include "BYGLocalizationSettings.h"
 #include "BYGLocalization/Public/BYGLocalization.h"
-#include "Modules/ModuleManager.h"
 #include "BYGLocalization/Public/BYGLocalizationModule.h"
 
 UBYGLocalizationSettings::UBYGLocalizationSettings( const FObjectInitializer& ObjectInitializer )
@@ -10,20 +9,6 @@ UBYGLocalizationSettings::UBYGLocalizationSettings( const FObjectInitializer& Ob
 	PrimaryLocalizationDirectory.Path = "/Localization/";
 }
 
-
-FString UBYGLocalizationSettings::RemovePrefixSuffix( const FString& FileWithExtension ) const
-{
-	FString Filename = FPaths::GetBaseFilename( FileWithExtension );
-	if ( !FilenamePrefix.IsEmpty() )
-	{
-		Filename = Filename.RightChop( FilenamePrefix.Len() );
-	}
-	if ( !FilenameSuffix.IsEmpty() )
-	{
-		Filename = Filename.LeftChop( FilenameSuffix.Len() );
-	}
-	return Filename;
-}
 
 bool UBYGLocalizationSettings::Validate()
 {
@@ -50,7 +35,7 @@ bool UBYGLocalizationSettings::Validate()
 
 	if ( bUpdateLocsWithCommandLineFlag && CommandLineFlag.IsEmpty() )
 	{
-		CommandLineFlag = "UpdateLocalization";
+		CommandLineFlag = "UpdateLoc";
 		bAnyChanges = true;
 	}
 
@@ -72,10 +57,7 @@ void UBYGLocalizationSettings::PostEditChangeProperty( struct FPropertyChangedEv
 		|| ( PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED( UBYGLocalizationSettings, AllowedExtensions ) )
 		)
 	{
-		UE_LOG( LogTemp, Verbose, TEXT( "Something" ) );
-
-		FModuleManager::GetModuleChecked<FBYGLocalizationModule>("BYGLocalization").ReloadLocalizations();
-
+		FBYGLocalizationModule::Get().ReloadLocalizations();
 	}
 
 	Super::PostEditChangeProperty( PropertyChangedEvent );

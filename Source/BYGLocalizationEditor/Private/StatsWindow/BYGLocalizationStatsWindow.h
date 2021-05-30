@@ -1,4 +1,4 @@
-// Copyright Brace Yourself Games. All Rights Reserved.
+// Copyright 2017-2021 Brace Yourself Games. All Rights Reserved.
 
 #pragma once
 
@@ -10,6 +10,9 @@
 #include "Widgets/Views/STableViewBase.h"
 #include "Widgets/Views/SListView.h"
 #include "Widgets/Views/STableRow.h"
+#include "Widgets/Images/SThrobber.h"
+#include "BYGLocalization/Public/BYGLocalization.h"
+#include "BYGLocalization/Private/BYGParseFileRunnable.h"
 
 #define LOCTEXT_NAMESPACE "BYGLocalization"
 
@@ -28,9 +31,8 @@ public:
 	int32 ModifiedEntries;
 	int32 DeprecatedEntries;
 	int32 TotalEntries;
-
-//private:
-	//FBYGLocalizationStatEntry();
+	FText Status;
+	bool bIsRefreshing = false;
 };
 
 class SBYGLocalizationStatsWindow 
@@ -38,34 +40,21 @@ class SBYGLocalizationStatsWindow
 {
 
 public:
-	SLATE_BEGIN_ARGS( SBYGLocalizationStatsWindow )
-		//: _Messages()
-		{}
-		
-		/** All messages captured before this log window has been created */
-		//SLATE_ARGUMENT( TArray< TSharedPtr<FOutputLogMessage> >, Messages )
-
+	SLATE_BEGIN_ARGS( SBYGLocalizationStatsWindow ){}
 	SLATE_END_ARGS()
 
 	virtual ~SBYGLocalizationStatsWindow();
 
-	/**
-	 * Construct this widget.  Called by the SNew() Slate macro.
-	 *
-	 * @param	InArgs	Declaration used by the SNew() macro to construct this widget
-	 */
 	void Construct( const FArguments& InArgs );
 
-
-	// SWidget interface
-	//virtual void Tick(const FGeometry& AllottedGeometry, const double InCurrentTime, const float InDeltaTime) override;
-
+	void OnFileParseComplete( const FString& Path, const BYGLocStats& LocStats );
 protected:
 	TSharedRef<ITableRow> OnGenerateWidgetForList( TSharedPtr<FBYGLocalizationStatEntry> InItem, const TSharedRef<STableViewBase>& OwnerTable );
 	TSharedPtr<SWidget> GetListContextMenu();
 
-	FReply OpenFolder();
-	FReply OpenFile();
+	void OpenFolder();
+	void OpenFile();
+	void RefreshFile();
 
 	void OnDoubleClicked( TSharedPtr<FBYGLocalizationStatEntry> );
 
@@ -73,6 +62,15 @@ protected:
 
 	TArray< TSharedPtr< FBYGLocalizationStatEntry > > Items;
 
+	TSet< TSharedPtr<FBYGLocalizationStatEntry> > StoredExpandedItems;
+
+	FReply RefreshAll();
+	FReply CancelAll();
+	void CleanupThreads();
+	// Could be TUniquePtr?
+	TSharedPtr<FBYGParseFileRunnable> ParseFileRunnable;
+
+	TSharedPtr<SCircularThrobber> StatusThrobber;
 };
 
 
@@ -84,10 +82,6 @@ public:
 		: _ItemToEdit()
 	{
 	}
-
-	SLATE_EVENT( FOnCanAcceptDrop, OnCanAcceptDrop )
-		SLATE_EVENT( FOnAcceptDrop, OnAcceptDrop )
-		SLATE_EVENT( FOnDragDetected, OnDragDetected )
 		SLATE_ARGUMENT( TSharedPtr<FBYGLocalizationStatEntry>, ItemToEdit )
 	SLATE_END_ARGS()
 
@@ -95,6 +89,9 @@ public:
 	virtual TSharedRef<SWidget> GenerateWidgetForColumn( const FName& ColumnName ) override
 	{
 		FSlateFontInfo ItemEditorFont = FCoreStyle::Get().GetFontStyle( TEXT( "NormalFont" ) );
+
+		// Get # of files in folder
+		// Get # of matched files in folder
 
 		#if 0
 		if ( ColumnName == TEXT( "Name" ) )
@@ -129,6 +126,24 @@ public:
 				// Lists do not need an expander arrow
 				return CellContent;
 			}
+		}
+		if ( ColumnName == "PrimaryLanguage")
+		{
+			return
+				SNew( SHorizontalBox )
+				+ SHorizontalBox::Slot()
+				.AutoWidth()
+				[
+					SNew( SExpanderArrow, SharedThis( this ) )
+				]
+			+ SHorizontalBox::Slot()
+				.VAlign( VAlign_Center )
+				.FillWidth(1.0f)
+				[
+					SNew(STextBlock)
+					.Text( LOCTEXT( "Something", "Something" ) )
+				];
+
 		}
 		#endif
 		if ( ColumnName == TEXT( "PrimaryLanguage" ) )
@@ -170,6 +185,10 @@ public:
 		{
 			return SNew( STextBlock ).Font( ItemEditorFont ).Text( this, &SBYGEntryTableRow::GetTotalEntries );
 		}
+		else if ( ColumnName == TEXT( "Status" ) )
+		{
+			return SNew( STextBlock ).Font( ItemEditorFont ).Text( this, &SBYGEntryTableRow::GetStatus );
+		}
 		else
 		{
 			return
@@ -188,12 +207,18 @@ public:
 		ItemToEdit = InArgs._ItemToEdit;
 
 		FSuperRowType::Construct( FSuperRowType::FArguments()
-			.OnCanAcceptDrop( InArgs._OnCanAcceptDrop )
-			.OnAcceptDrop( InArgs._OnAcceptDrop )
-			.OnDragDetected( InArgs._OnDragDetected )
-			.Padding( 0 )
+			.Padding( 2 )
 			, InOwnerTableView );
 	}
+
+	virtual int32 DoesItemHaveChildren() const override { return 1; }
+	virtual bool IsItemExpanded() const override { return bIsExpanded; }
+	virtual void ToggleExpansion() override;
+
+	const FSlateBrush* GetBackgroundImage() const;
+private:
+	bool bIsExpanded = true;
+	TSharedPtr< SWidget > CategoryContent;
 
 private:
 
@@ -234,6 +259,14 @@ private:
 	FText GetTotalEntries() const
 	{
 		return FText::AsNumber( ItemToEdit->TotalEntries );
+	}
+	FText GetStatus() const
+	{
+		if ( ItemToEdit->bIsRefreshing )
+		{
+			return LOCTEXT( "Reloading", "Reloading..." );
+		}
+		return ItemToEdit->Status;
 	}
 
 	/** A pointer to the data item that we visualize/edit */

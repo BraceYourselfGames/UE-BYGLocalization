@@ -2,7 +2,11 @@
 
 #pragma once
 
+#include "CoreMinimal.h"
 #include "CoreUObject/Public/UObject/NoExportTypes.h"
+#include "Engine/EngineTypes.h"
+#include "Misc/Paths.h"
+#include "Windows/WindowsPlatformProcess.h"
 #include "BYGLocalizationSettings.generated.h"
 
 UENUM()
@@ -33,10 +37,10 @@ struct FBYGPath
 {
 	GENERATED_BODY()
 
-	UPROPERTY( EditAnywhere )
+	UPROPERTY( EditAnywhere, Category = "Path" )
 	EBYGPathRoot Root = EBYGPathRoot::ContentDir;
 
-	UPROPERTY( EditAnywhere )
+	UPROPERTY( EditAnywhere, Category = "Path" )
 	FString RelativePath;
 
 	FDirectoryPath GetDirectoryPath() const
@@ -112,7 +116,9 @@ public:
 	UPROPERTY( config, EditAnywhere, Category = "File Settings" )
 	bool bCreateBackup = true;
 
-	FString RemovePrefixSuffix( const FString& Filename ) const;
+	// If true, the CSV update process ignores if a file is marked "read-only" and will overwrite it anyway
+	UPROPERTY( config, EditAnywhere, AdvancedDisplay, Category = "File Settings" )
+	bool bAllowOverwriteReadOnlyFiles = false;
 
 	// This can be used to differentiate between multiple localizations of the same language.
 	// e.g. Adding "_meta_author,Fan A,," key to the loc_fr.csv localization file will result in the language showing up as French (Fan A)
@@ -155,8 +161,6 @@ public:
 
 
 
-
-
 	// WARNING: Changing this string will break any existing FText entries that are saved in Blueprints. Set it once at the start of the project and never change it.
 	UPROPERTY( config, EditAnywhere, AdvancedDisplay, Category = "Internal Settings" )
 	FString StringtableID = "Game";
@@ -167,7 +171,7 @@ public:
 
 	UPROPERTY( config, EditAnywhere, AdvancedDisplay, Category = "Internal Settings" )
 	FString NewStatus = "New Entry";
-	// This is a janky backwards-compatible way so we can snip out the original Original w/o using expensive regexees
+	// This is a janky backwards-compatible way so we can snip out the previous Primary translation w/o using expensive regexees
 	UPROPERTY( config, EditAnywhere, AdvancedDisplay, Category = "Internal Settings" )
 	FString ModifiedStatusLeft = "Modified Entry: was '";
 	UPROPERTY( config, EditAnywhere, AdvancedDisplay, Category = "Internal Settings" )

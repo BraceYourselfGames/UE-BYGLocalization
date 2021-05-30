@@ -30,8 +30,8 @@ It differs from Unreal's localization system in a few ways:
 
 ## Usage
 
-For this example, we will be using English as the **Original Language**, but
-the system works with using any language as the original language.
+For this example, we will be using English as the **Primary Language**, but
+the system works with using any language as the Primary language.
 
 ### Create CSV file
 
@@ -47,6 +47,16 @@ Goodbye_World,"See you later!",Shown when quitting the game.,,,
 
 ### Using Localized Text in Blueprints
 
+After adding the keys to the Stringtable CSV file, choose the entries for all
+`FText` properties by:
+
+1. Click on the drop-down arrow.
+2. Choose the Stringtable ID. BYG Localization defaults to "Game".
+3. Choose the key
+
+![Animation showing process for choosing a string entry](https://benui.ca/assets/unreal/stringtable.gif)
+
+In Blueprint graphs, use `GetGameText` in `BYGLocalizationStatics`.
 
 ### Getting Localized Text in C++ 
 
@@ -56,9 +66,20 @@ FText ButtonLabelText = UBYGLocalizationStatics::GetGameText( "Hello_World" );
 
 ### Changing the active locale
 
+```cpp
 FString PathToCSV;
-UBYGLocalizationStatics::SetActiveLocalization( 
+UBYGLocalizationStatics::SetActiveLocalization( PathToCSV );
+```
 
+### Stats Window
+
+There is an stats window available in the editor for seeing which localization
+files have been detected by the system, how many entries they have, the status
+of those entries etc.
+
+Access it through `Window > Developer Tools > BYG Localization Stats`.
+
+![Stats window example](https://benui.ca/assets/unreal/byglocalization-statswindow.png)
 
 ### Customizing Settings
 
@@ -81,8 +102,8 @@ Settings include:
 
 ## Unreal Version Support
 
-* Unreal Engine 4.26
-* May work with previous versions, but not tested
+* Compiles under Unreal Engine 4.22~5.0EA
+* Tested mostly with 4.25 and 4.26
 
 ## License
 
@@ -91,13 +112,14 @@ Settings include:
 ## Contact
 
 * Created and maintained by [@_benui](https://twitter.com/_benui) at [Brace Yourself Games](https://braceyourselfgames.com/)
+* Please report bugs through [GitHub](https://github.com/BraceYourselfGames/UE4-BYGLocalization/issues)
 
 ## Future Work
 
 * Detecting runaway misquoted strings.
 * Allowing multiple stringtables, e.g. `loc_en_ui.csv`, `loc_en_dialog.csv`.
-* More tests.
-* Profiling and performance increases.
+* More tests!
+* Profiling and performance improvements.
 * Improve dir picker, see `DirectoryPathStructCustomization`
 
 ## FAQ

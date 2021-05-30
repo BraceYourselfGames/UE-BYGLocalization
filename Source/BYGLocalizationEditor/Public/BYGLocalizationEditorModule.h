@@ -1,4 +1,4 @@
-// Copyright Brace Yourself Games. All Rights Reserved.
+// Copyright 2017-2021 Brace Yourself Games. All Rights Reserved.
 
 #pragma once
 

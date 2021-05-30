@@ -17,13 +17,13 @@
 	"Modules": [
 		{
 			"Name": "BYGLocalization",
-			"Type": "ClientOnlyNoCommandlet",
+			"Type": "Runtime",
 			"LoadingPhase": "PreDefault",
 			"WhitelistPlatforms": [ "Win64", "Mac", "Linux" ]
 		},
 		{
 			"Name": "BYGLocalizationEditor",
-			"Type": "EditorNoCommandlet",
+			"Type": "Editor",
 			"LoadingPhase": "Default"
 		}
 	]

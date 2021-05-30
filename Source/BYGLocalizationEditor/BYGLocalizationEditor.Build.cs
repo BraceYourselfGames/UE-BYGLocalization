@@ -1,4 +1,4 @@
-// Copyright Brace Yourself Games. All Rights Reserved.
+// Copyright 2017-2021 Brace Yourself Games. All Rights Reserved.
 
 using UnrealBuildTool;
 
@@ -14,7 +14,6 @@ public class BYGLocalizationEditor : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"UnrealEd",
-                "UMG",
 			}
 		);
 
@@ -22,11 +21,15 @@ public class BYGLocalizationEditor : ModuleRules
 			new string[] {
 				"Slate",
                 "SlateCore",
-				"BYGLocalization",
 				"InputCore",
                 "EditorStyle",
 				"FunctionalTesting",
-            }
+
+				// UIStyle stuff
+				"Projects",
+
+				"BYGLocalization",
+			}
         );
 	}
 }

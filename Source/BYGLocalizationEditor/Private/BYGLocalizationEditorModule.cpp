@@ -1,4 +1,4 @@
-// Copyright Brace Yourself Games. All Rights Reserved.
+// Copyright 2017-2021 Brace Yourself Games. All Rights Reserved.
 
 #include "BYGLocalizationEditorModule.h"
 
@@ -14,6 +14,7 @@
 #include "Widgets/Docking/SDockTab.h"
 
 #include "BYGLocalization/Public/BYGLocalizationSettings.h"
+#include "BYGLocalizationUIStyle.h"
 
 #define LOCTEXT_NAMESPACE "BYGLocalizationEditorModule"
 
@@ -52,12 +53,14 @@ void FBYGLocalizationEditorModule::StartupModule()
 		}
 	}
 
+	FBYGLocalizationUIStyle::Initialize();
+
 
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner( BYGLocalizationModule::LocalizationStatsTabName, FOnSpawnTab::CreateStatic( &SpawnStatsTab ) )
 		.SetDisplayName( NSLOCTEXT( "BYGLocalization", "TestTab", "BYG Localization Stats" ) )
 		.SetTooltipText( NSLOCTEXT( "BYGLocalization", "TestTooltipText", "Open a window with info on localizations." ) )
-		.SetGroup( WorkspaceMenu::GetMenuStructure().GetDeveloperToolsMiscCategory() );
-		//.SetIcon( FSlateIcon( FBYGRichTextUIStyle::GetStyleSetName(), "BYGRichText.TabIcon" ) );
+		.SetGroup( WorkspaceMenu::GetMenuStructure().GetDeveloperToolsMiscCategory() )
+		.SetIcon( FSlateIcon( FBYGLocalizationUIStyle::GetStyleSetName(), "BYGLocalization.TabIcon" ) );
 }
 
 void FBYGLocalizationEditorModule::ShutdownModule()

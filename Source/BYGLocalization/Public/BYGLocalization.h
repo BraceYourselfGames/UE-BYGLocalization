@@ -4,8 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Internationalization/Culture.h"
+#include "BYGLocalizationSettings.h"
 
-enum class EBYGLocalizationStatus : uint8
+enum class EBYGLocEntryStatus : uint8
 {
 	None,
 	New,
@@ -13,90 +14,117 @@ enum class EBYGLocalizationStatus : uint8
 	Deprecated
 };
 
-struct FBYGLocalizationLocaleBasic
+enum class EBYGLocErrorFlags : uint8
+{
+	Success,
+	InvalidHeader,
+};
+
+struct FBYGLocaleInfo
 {
 	FString LocaleCode;
+	FText LocalizedName;
 	FString FilePath;
-	FText Language;
 };
 
 struct FBYGLocalizationEntry
 {
-	FBYGLocalizationEntry()
-		: bIsEmptyLine( true )
-	{
-	}
+	FBYGLocalizationEntry() {}
 	FBYGLocalizationEntry( FString Key_, FString Translation_, FString Comment_ )
 		: Key( Key_ )
 		, Translation( Translation_ )
 		, Comment( Comment_ )
-		, bIsEmptyLine( false )
 	{
 	}
 	FString Key;
 	FString Translation;
 	FString Comment;
-	FString Original;
-	FString OldOriginal; // Not in CSV
-	EBYGLocalizationStatus Status = EBYGLocalizationStatus::None;
-	bool bIsEmptyLine = false;
+	FString Primary;
+	FString OldPrimary; // Not in CSV
+	EBYGLocEntryStatus Status = EBYGLocEntryStatus::None;
 };
 
-struct FBYGLocalizationLocale
+// Internal data structure for 
+struct FBYGLocaleData
 {
 public:
-	FString FilePath;
-	FString Locale;
+	FBYGLocaleData() {}
+	FBYGLocaleData( const TArray<FBYGLocalizationEntry>& NewEntries );
 
-	FString Author;
-
-	inline TArray<FBYGLocalizationEntry> GetEntriesInOrder() const { return EntriesInOrder; }
-	inline TMap<FString, int32> GetKeyToIndex() const { return KeyToIndex; }
-
-	void SetEntriesInOrder( TArray<FBYGLocalizationEntry>& NewEntries );
-
-	TMap<EBYGLocalizationStatus, int32> StatusCounts;
+	inline const TArray<FBYGLocalizationEntry>* GetEntriesInOrder() const { return &EntriesInOrder; }
+	inline const TMap<FString, int32>* GetKeyToIndex() const { return &KeyToIndex; }
 
 protected:
 	TArray<FBYGLocalizationEntry> EntriesInOrder;
 	TMap<FString, int32> KeyToIndex;
 };
 
+class IBYGLocalizationSettingsProvider
+{
+public:
+	// Make abstract?
+	virtual const UBYGLocalizationSettings* GetSettings() const { return nullptr; }
+};
+
+class UBYGLocalizationSettingsProvider : public IBYGLocalizationSettingsProvider
+{
+public:
+	virtual const UBYGLocalizationSettings* GetSettings() const override
+	{
+		return GetDefault<UBYGLocalizationSettings>();
+	}
+};
+
+typedef TMap<EBYGLocEntryStatus, int32> BYGLocStats;
+
+// Internal data structure used for	updating non-primary localizations based on the information in the primary
+// We re-order entries in the non-primary to match those of the 
 class BYGLOCALIZATION_API UBYGLocalization
 {
 public:
+
+	void Construct( TSharedPtr<const IBYGLocalizationSettingsProvider> Provider );
+
 	// Returns a map from filename to display name
-	static TArray<FBYGLocalizationLocaleBasic> GetAvailableLocalizations( bool bLoadCSVFileContent );
+	TArray<FBYGLocaleInfo> GetAvailableLocalizations() const;
 
-	static bool GetLocalizationExists( const FString& FilePath );
-	static void UpdateTranslations();
+	// Returns false when no primary translations found
+	bool UpdateTranslations();
 
-	//static FString GetFilePathForCulture( const FString& Culture, bool bIncludeContentDir );
+	bool GetLocalizationStats( const FString& Filename, BYGLocStats& StatusCounts ) const;
 
-	static FBYGLocalizationLocale GetLocalizationData( const FString& Filename );
+	bool GetLocaleFromPreferences( FBYGLocaleInfo& FoundLocale ) const;
 
-	//static const FString DefaultLocalizationPathWithExtension;
+	FBYGLocaleInfo GetCultureFromFilename( const FString& FileWithPath ) const;
 
-	static bool GetPreferredAvailableCulture( FBYGLocalizationLocaleBasic& FoundLocale );
+	// Returns an expected filename based on the user settings 
+	FString GetFilenameFromLanguageCode( const FString& LanguageCode ) const;
 
-	static FBYGLocalizationLocaleBasic GetCultureFromFilename( const FString& FileWithPath );
+	FString GetFileWithPathFromLanguageCode( const FString& LanguageCode ) const;
 
-	static FString GetFilenameFromLanguageCode( const FString& LanguageCode );
-
-	static FString GetFileWithPathFromLanguageCode( const FString& LanguageCode );
-
+	bool GetAuthorForLocale( const FString& Filename, FText& Author ) const;
 protected:
-	static TArray<FString> GetAllLocalizationFiles();
-	static bool WriteCSV( const TArray<FBYGLocalizationEntry>& Entries, const FString& Filename );
+	// We have a settings provider to allow for easier testing. In production we use GetDefault<UBYGLocalizationSettings>().
+	TSharedPtr<const IBYGLocalizationSettingsProvider> SettingsProvider;
+
+	bool GetLocalizationDataFromFile( const FString& Filename, FBYGLocaleData& LocalizationData ) const;
+	bool UpdateTranslationFile( const FString& Path, const TArray<FBYGLocalizationEntry>* PrimaryEntriesInOrder, const TMap<FString, int32>* PrimaryKeyToIndex );
+
+	TArray<FString> GetAllLocalizationFiles() const;
+	// Writes datastructure to CSV but with explicit quoting etc.
+	bool WriteCSV( const TArray<FBYGLocalizationEntry>& Entries, const FString& Filename );
+
+	FString RemovePrefixSuffix( const FString& FileWithExtension ) const;
+
 	static FString ReplaceCharWithEscapedChar( const FString& Str );
 
-	//static const TArray<FString> LocRootPaths;
-	//static const FString NewStatus;
-	//static const FString ModifiedStatusLeft;
-	//static const FString ModifiedStatusRight;
-	//static const FString DeprecatedStatus;
-	//static const FString DefaultLocalizationPath;
-	//static const TArray<FString> ValidExtensions;
+	static FString LazyWrap( const FString& InStr, bool bForceWrap = false );
+
+	// Hacky testing
+	friend class FBYGEscapeCharacterTest;
+	friend class FBYGLazyWrapTest;
+	friend class FBYGWriteCSVTest;
+	friend class FBYGFullLoopTest;
 
 };
 
