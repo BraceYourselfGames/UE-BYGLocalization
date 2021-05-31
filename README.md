@@ -107,22 +107,21 @@ Settings include:
 2. Launch the game with the `-UpdateLoc` flag (create a desktop shortcut).
 3. Your `loc_fr.csv` file is now populated with all of the primary language
    strings.
-4. 
 
 After creating `loc_fr.csv` and running the game, your CSV file will look like
 this:
 
 | Key | SourceString | Comment | Primary | Status |
 | --- | --- | --- | --- | --- |
-| `NewGameButtonLabel` | New Game | Shown on the main menu. | New Game | New Entry |
-| `ExitGameButtonLabel` | Quit | Shown on the main menu. | Quit | New Entry |
+| `NewGameButtonLabel` | New Game | On main menu, starts new game | New Game | New Entry |
+| `ExitGameButtonLabel` | Quit | Exits the program | Quit | New Entry |
 
 After translation, your CSV file should look like this. You can remove the "New Entry" text from the Status column:
 
 | Key | SourceString | Comment | Primary | Status |
 | --- | --- | --- | --- | --- |
-| `NewGameButtonLabel` | Nouvelle partie | Shown on the main menu. | New Game | |
-| `ExitGameButtonLabel` | Quitter | Shown on the main menu. | Quit | |
+| `NewGameButtonLabel` | Nouvelle partie | On main menu, starts new game. | New Game | _(blank)_ |
+| `ExitGameButtonLabel` | Quitter | Exits the program. | Quit | _(blank)_ |
 
 ### Maintaining a localization
 
@@ -133,8 +132,9 @@ As the game is updated, strings will be added, removed or modified.
 
 | Key | SourceString | Comment | Primary | Status |
 | --- | --- | --- | --- | --- |
-| `ExitGameButtonLabel` | Quitter | Shown on the main menu. | Quit game | Modified: Was 'Quit' |
-| `LoadGameButtonLabel` | Load Game | Shown on the main menu. | Load Game | New Entry |
+| `NewGameButtonLabel` | Nouvelle partie | On main menu, starts new game. | New Game | _(blank)_ |
+| `ExitGameButtonLabel` | Quitter | On main menu, starts new game. | Quit game | Modified: Was 'Quit' |
+| `LoadGameButtonLabel` | Load Game | Shows the load game screen. | Load Game | New Entry |
 
 
 
