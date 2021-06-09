@@ -30,12 +30,12 @@ It differs from Unreal's localization system in a few ways:
 
 
 
-## Usage
+## Set-up
 
 For this example, we will be using English as the **Primary Language**, but
 the system works with using any language as the Primary language.
 
-### Create CSV file
+### 1. Create CSV file
 
 We are using English as the primary language for our game so we will create
 `loc_en.csv` inside `/Content/Localization/`, the default localization root
@@ -46,6 +46,23 @@ Key,SourceString,Comment,English,Status
 Hello_World,"Hello world, how are you?",General greeting.,,
 Goodbye_World,"See you later!",Shown when quitting the game.,,,
 ```
+
+### 2. Configure the plugin
+
+Open `Project Settings > Plugins > BYG Localization` and set the 
+following:
+
+- Primary Localization Directory should point to where you saved the
+  csv file.
+- Most other defaults should be OK.
+
+Open `Window > Developer Tools > BYG Localization Stats`, and hit 
+Refresh All. Your csv file should be listed there.
+
+![Stats window example](https://benui.ca/assets/unreal/byglocalization-statswindow.png)
+
+
+## Usage
 
 ### Using Localized Text in Blueprints
 
