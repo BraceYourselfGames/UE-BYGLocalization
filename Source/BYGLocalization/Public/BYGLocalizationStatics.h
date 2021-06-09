@@ -11,13 +11,18 @@ class BYGLOCALIZATION_API UBYGLocalizationStatics : public UBlueprintFunctionLib
 {
 	GENERATED_BODY()
 public:
-
-	UFUNCTION( BlueprintCallable )
+	// Primary way for dynamically setting up localized strings. Uses the currently-loaded String Table
+	UFUNCTION( BlueprintCallable, Category = "BYG|Localization" )
 	static FText GetGameText( const FString& Key );
 
-	UFUNCTION( BlueprintCallable )
+	// Returns false if either table or text does not exist
+	UFUNCTION( BlueprintCallable, Category = "BYG|Localization" )
 	static bool HasTextInTable( const FString& TableName, const FString& Key );
 
-	UFUNCTION( BlueprintCallable )
+	// Use this to change the current localization, for example if the player changes their
+	// preferred locale.
+	// Need to specify a path and not just a locale code because fan-made localizations
+	// can lead to multiple localizations of the same locale.
+	UFUNCTION( BlueprintCallable, Category = "BYG|Localization" )
 	static bool SetLocalizationFromFile( const FString& Path );
 };
