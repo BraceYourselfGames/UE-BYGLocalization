@@ -52,7 +52,8 @@ TArray<FString> UBYGLocalization::GetAllLocalizationFiles() const
 	for ( const FDirectoryPath& Path : Paths )
 	{
 		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-		FString LocalizationDirPath = FPaths::Combine( FPaths::ProjectContentDir(), Path.Path );
+		// Directory Path will probably be /Game/Somethingd
+		FString LocalizationDirPath = Path.Path.Replace( TEXT( "/Game" ), *FPaths::ProjectContentDir() );
 		FPaths::RemoveDuplicateSlashes( LocalizationDirPath );
 		bool bFound = false;
 		TArray<FString> LocalFiles;
