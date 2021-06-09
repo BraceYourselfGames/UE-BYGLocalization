@@ -100,6 +100,25 @@ Settings include:
 * Profiling and performance increases.
 * Improve dir picker, see `DirectoryPathStructCustomization`
 
+
+## How it works
+
+The plugin uses Project Settings to search for localization files in the
+specified directories. It uses Unreal's String Table system to register both
+the primary language (e.g. English) and the user's preferred language (e.g.
+French).
+
+Fallback works in two ways:
+
+1) If text is set with `UBYGLocalizationStatics::GetText(const FString&
+KeyName)` and the key is not found, the key is then looked up in the fallback
+table.
+
+2) When running the game, all localization files are parsed and any missing
+keys are added to non-primary localization files. This way `FText` properties
+inside Blueprints  will still find keys in the Stringtable for the user's
+selected locale.
+
 ## FAQ
 
 ### Q) I changed Stringtable Namespace and/or Stringtable ID and now my text is gone!
