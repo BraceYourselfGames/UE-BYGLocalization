@@ -191,6 +191,8 @@ As the game is updated, strings will be added, removed or modified.
 * More tests!
 * Profiling and performance improvements.
 * Improve dir picker, see `DirectoryPathStructCustomization`
+* Add "Export Changes" function for exporting New and Modified entries for all
+  seelcted languages.
 
 
 
