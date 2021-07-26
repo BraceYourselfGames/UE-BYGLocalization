@@ -56,7 +56,11 @@ void FBYGLocalizationModule::ReloadLocalizations()
 
 	// GameStrings is the ID we use for our currently-used string table
 	// For example it could be French if the player has chosen to use French
-	const FString Filename = Loc->GetFileWithPathFromLanguageCode( Settings->PrimaryLanguageCode );
+	FString Filename = Loc->GetFileWithPathFromLanguageCode( Settings->PrimaryLanguageCode );
+
+	// Remove any project paths from the filename because Internal_LocTableFromFile will factor them in
+	Filename = Filename.Replace( TEXT( "/Game/" ), TEXT("") );
+	
 	StringTableIDs.Add( FName( *Settings->StringtableID ) );
 	FStringTableRegistry::Get().Internal_LocTableFromFile( StringTableIDs[ 0 ], Settings->StringtableNamespace, Filename, FPaths::ProjectContentDir() );
 
