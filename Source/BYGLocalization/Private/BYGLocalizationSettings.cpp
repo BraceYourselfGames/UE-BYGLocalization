@@ -33,6 +33,18 @@ bool UBYGLocalizationSettings::Validate()
 		bAnyChanges = true;
 	}
 
+	if ( PrimaryLocalizationDirectory.Path.StartsWith( TEXT( "/" ) ) )
+	{
+		PrimaryLocalizationDirectory.Path = PrimaryLocalizationDirectory.Path.RightChop( 1 );
+		bAnyChanges = true;
+	}
+
+	if ( PrimaryLocalizationDirectory.Path.StartsWith( TEXT( "Game/" ) ) )
+	{
+		PrimaryLocalizationDirectory.Path = PrimaryLocalizationDirectory.Path.RightChop( 5 );
+		bAnyChanges = true;
+	}
+
 	if ( bUpdateLocsWithCommandLineFlag && CommandLineFlag.IsEmpty() )
 	{
 		CommandLineFlag = "UpdateLoc";
@@ -57,6 +69,7 @@ void UBYGLocalizationSettings::PostEditChangeProperty( struct FPropertyChangedEv
 		|| ( PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED( UBYGLocalizationSettings, AllowedExtensions ) )
 		)
 	{
+		Validate();
 		FBYGLocalizationModule::Get().ReloadLocalizations();
 	}
 
