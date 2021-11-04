@@ -6,7 +6,7 @@
 
 UBYGLocalizationSettings::UBYGLocalizationSettings( const FObjectInitializer& ObjectInitializer )
 {
-	PrimaryLocalizationDirectory.Path = "/Localization/";
+	PrimaryLocalizationDirectory.Path = "Localization";
 }
 
 
