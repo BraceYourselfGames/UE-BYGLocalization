@@ -52,12 +52,9 @@ TArray<FString> UBYGLocalization::GetAllLocalizationFiles() const
 	for ( const FDirectoryPath& Path : Paths )
 	{
 		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile();
-		// Directory Path will probably be /Game/Somethingd
-		FString LocalizationDirPath = Path.Path.Replace( TEXT( "/Game" ), *FPaths::ProjectContentDir() );
-		FPaths::RemoveDuplicateSlashes( LocalizationDirPath );
-		bool bFound = false;
-		TArray<FString> LocalFiles;
-		PlatformFile.IterateDirectoryRecursively( *LocalizationDirPath, [&bFound, &PlatformFile, &Files, &Settings]( const TCHAR* InFilenameOrDirectory, const bool bIsDir ) -> bool
+		// Directory Path will probably be /Localization
+		FString LocalizationDirPath = *FPaths::ProjectContentDir() / Path.Path;
+		PlatformFile.IterateDirectoryRecursively( *LocalizationDirPath, [&Files, &Settings]( const TCHAR* InFilenameOrDirectory, const bool bIsDir ) -> bool
 		{
 			// Find all .txt/.csv files in a dir
 			if ( !bIsDir )
@@ -68,7 +65,6 @@ TArray<FString> UBYGLocalization::GetAllLocalizationFiles() const
 					&& ( Settings->FilenameSuffix.IsEmpty() || BaseName.EndsWith( Settings->FilenameSuffix ) ) )
 				{
 					FString NewPath = InFilenameOrDirectory;
-					FPaths::RemoveDuplicateSlashes( NewPath );
 					FPaths::MakePathRelativeTo( NewPath, *FPaths::ProjectContentDir() );
 					Files.Add( NewPath );
 				}
@@ -76,7 +72,6 @@ TArray<FString> UBYGLocalization::GetAllLocalizationFiles() const
 			// return true to continue searching
 			return true;
 		} );
-		Files.Append( LocalFiles );
 	}
 
 	return Files;
