@@ -6,7 +6,7 @@
 
 UBYGLocalizationSettings::UBYGLocalizationSettings( const FObjectInitializer& ObjectInitializer )
 {
-	PrimaryLocalizationDirectory.Path = "/Localization/";
+	PrimaryLocalizationDirectory.Path = "Localization";
 }
 
 
@@ -30,6 +30,18 @@ bool UBYGLocalizationSettings::Validate()
 	if ( PrimaryLocalizationDirectory.Path.EndsWith( TEXT( "/" ) ) )
 	{
 		PrimaryLocalizationDirectory.Path = PrimaryLocalizationDirectory.Path.LeftChop( 1 );
+		bAnyChanges = true;
+	}
+
+	if ( PrimaryLocalizationDirectory.Path.StartsWith( TEXT( "/" ) ) )
+	{
+		PrimaryLocalizationDirectory.Path = PrimaryLocalizationDirectory.Path.RightChop( 1 );
+		bAnyChanges = true;
+	}
+
+	if ( PrimaryLocalizationDirectory.Path.StartsWith( TEXT( "Game/" ) ) )
+	{
+		PrimaryLocalizationDirectory.Path = PrimaryLocalizationDirectory.Path.RightChop( 5 );
 		bAnyChanges = true;
 	}
 
@@ -57,6 +69,7 @@ void UBYGLocalizationSettings::PostEditChangeProperty( struct FPropertyChangedEv
 		|| ( PropertyChangedEvent.GetPropertyName() == GET_MEMBER_NAME_CHECKED( UBYGLocalizationSettings, AllowedExtensions ) )
 		)
 	{
+		Validate();
 		FBYGLocalizationModule::Get().ReloadLocalizations();
 	}
 
